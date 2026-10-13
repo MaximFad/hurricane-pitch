@@ -21,6 +21,10 @@ section h2 { font-size: 64px; font-weight: 600; line-height: 1.15; }
 section h3 { font-size: 44px; font-weight: 600; line-height: 1.2; }
 section img, section video { display: block; flex: none; object-fit: cover; }
 section a { color: inherit; text-decoration: underline; text-underline-offset: 4px; }
+.frame > section > * { position: relative; z-index: 1; }
+.frame > section > svg:first-child { z-index: 0; overflow: visible; }
+#cover { overflow: visible; }
+#team > div[id*="r1_"] { top: 372px !important; height: auto !important; min-height: 336px; transform: none !important; }
 </style>
 </head>
 <body>
@@ -220,13 +224,20 @@ section a { color: inherit; text-decoration: underline; text-underline-offset: 4
     frames.forEach(function (f, i) { var t = Math.abs(f.getBoundingClientRect().top); if (t < d) { d = t; best = i; } });
     return best;
   }
+  var target = null, timer = null;
+  window.addEventListener('scroll', function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () { target = null; }, 250);
+  }, { passive: true });
   document.addEventListener('keydown', function (e) {
     var step = (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') ? 1
              : (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') ? -1 : 0;
     if (!step) return;
-    var i = Math.max(0, Math.min(frames.length - 1, current() + step));
     e.preventDefault();
-    frames[i].scrollIntoView({ behavior: 'smooth' });
+    if (e.repeat) return;
+    var base = target === null ? current() : target;
+    target = Math.max(0, Math.min(frames.length - 1, base + step));
+    frames[target].scrollIntoView({ behavior: 'smooth' });
   });
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
